@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Inventory app
 ==================================
 
@@ -27,3 +28,6 @@ Getting Started
 ---------------
 
 1. Download and run the app.
+=======
+# Inventory-App
+>>>>>>> 36fe664aa22c457911c7e33bfa89165283e0778c
