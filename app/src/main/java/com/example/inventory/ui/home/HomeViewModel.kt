@@ -20,17 +20,39 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.inventory.data.Item
 import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
+
 
 /**
  * ViewModel to retrieve all items in the Room database.
  */
 class HomeViewModel(itemsRepository: ItemsRepository) : ViewModel() {
-    val homeUiState: StateFlow<HomeUiState> =
-        itemsRepository.getAllItemsStream().map { HomeUiState(it) }
+
+    // MutableStateFlows for search text and search state
+    private val _searchText = MutableStateFlow("")
+    val searchText = _searchText.asStateFlow()
+
+//    private val _isSearching = MutableStateFlow(false)
+//    val isSearching = _isSearching.asStateFlow()
+
+    // Combined stream to filter items based on the search query
+    val homeUiState: StateFlow<HomeUiState> = combine(
+        itemsRepository.getAllItemsStream(),
+        _searchText
+    ) { items, query ->
+        val filteredItems = if (query.isEmpty()) {
+            items
+        } else {
+            items.filter { it.name.contains(query, ignoreCase = true) }
+        }
+        HomeUiState(filteredItems)
+    }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
@@ -39,9 +61,14 @@ class HomeViewModel(itemsRepository: ItemsRepository) : ViewModel() {
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
+
+    fun updateSearchText(newText: String) {
+        _searchText.value = newText
+    }
 }
 
 /**
  * Ui State for HomeScreen
  */
 data class HomeUiState(val itemList: List<Item> = listOf())
+

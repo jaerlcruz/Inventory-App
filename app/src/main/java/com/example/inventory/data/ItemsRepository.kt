@@ -33,6 +33,11 @@ interface ItemsRepository {
     fun getItemStream(id: Int): Flow<Item?>
 
     /**
+     * Retrieve an item from the given data source that matches with the [name].
+     */
+    fun getItemByNameStream(name: String): Flow<Item?>
+
+    /**
      * Insert item in the data source
      */
     suspend fun insertItem(item: Item)

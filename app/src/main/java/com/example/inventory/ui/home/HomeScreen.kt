@@ -35,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -76,15 +77,26 @@ fun HomeScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val homeUiState by viewModel.homeUiState.collectAsState()
+    val searchText by viewModel.searchText.collectAsState()
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            InventoryTopAppBar(
-                title = stringResource(HomeDestination.titleRes),
-                canNavigateBack = false,
-                scrollBehavior = scrollBehavior
-            )
+            Column {
+                InventoryTopAppBar(
+                    title = stringResource(HomeDestination.titleRes),
+                    canNavigateBack = false,
+                    scrollBehavior = scrollBehavior
+                )
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = viewModel::updateSearchText,
+                    label = { Text(stringResource(R.string.search_action)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = dimensionResource(id = R.dimen.padding_small))
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(
