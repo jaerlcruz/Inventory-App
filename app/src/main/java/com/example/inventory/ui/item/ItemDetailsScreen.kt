@@ -122,7 +122,7 @@ fun ItemDetailsScreen(
             onSaveClick = {
                 coroutineScope.launch {
                     editViewModel.updateItem()
-                    navigateToOrder(0)
+                    navigateToOrder(it.id)
                 }
             },
             modifier = Modifier
@@ -143,7 +143,7 @@ private fun ItemDetailsBody(
     onSellItem: () -> Unit,
     onDelete: () -> Unit,
     onValueChange: (ItemDetails) -> Unit,
-    onSaveClick: () -> Unit,
+    onSaveClick: (Item) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -179,7 +179,7 @@ private fun ItemDetailsBody(
             modifier = Modifier.fillMaxWidth()
         )
         Button(
-            onClick = onSaveClick,
+            onClick = { onSaveClick(itemDetails.toItem()) },
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
             enabled = true
