@@ -47,6 +47,15 @@ class ItemDetailsViewModel(
                 initialValue = ItemDetailsUiState()
             )
 
+
+    // Order item and add to current stock
+    fun orderBuy(ordered: Int) {
+        viewModelScope.launch {
+            val currentItem = uiState.value.itemDetails.toItem()
+            itemsRepository.updateItem(currentItem.copy(ordered = ordered))
+        }
+    }
+
     fun reduceQuantityByOne() {
         viewModelScope.launch {
             val currentItem = uiState.value.itemDetails.toItem()
