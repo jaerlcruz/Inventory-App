@@ -46,7 +46,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -80,11 +79,12 @@ fun ItemDetailsScreen(
     navigateToEditItem: (Int) -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    editViewModel: ItemEditViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState = viewModel.uiState.collectAsState()
+    val itemUiState = editViewModel.itemUiState
     val coroutineScope = rememberCoroutineScope()
-    var orderAmount by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -109,6 +109,7 @@ fun ItemDetailsScreen(
     ) { innerPadding ->
         ItemDetailsBody(
             itemDetailsUiState = uiState.value,
+            itemDetails = itemUiState.itemDetails,
             onSellItem = { viewModel.reduceQuantityByOne() },
             onDelete = {
                 coroutineScope.launch {
@@ -116,7 +117,13 @@ fun ItemDetailsScreen(
                     navigateBack()
                 }
             },
-            onOrder = { viewModel.orderBuy(orderAmount) },
+            onValueChange = editViewModel::updateUiState,
+            onSaveClick = {
+                coroutineScope.launch {
+                    editViewModel.updateItem()
+                    navigateBack()
+                }
+            },
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
@@ -131,9 +138,11 @@ fun ItemDetailsScreen(
 @Composable
 private fun ItemDetailsBody(
     itemDetailsUiState: ItemDetailsUiState,
+    itemDetails: ItemDetails,
     onSellItem: () -> Unit,
     onDelete: () -> Unit,
-    onOrder: () -> Unit,
+    onValueChange: (ItemDetails) -> Unit,
+    onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -141,7 +150,6 @@ private fun ItemDetailsBody(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
         var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
-        var orderAmount by rememberSaveable { mutableStateOf("") }
 
         ItemDetails(
             item = itemDetailsUiState.itemDetails.toItem(),
@@ -164,13 +172,13 @@ private fun ItemDetailsBody(
         }
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            value = orderAmount,
-            onValueChange = { orderAmount = it },
+            value = itemDetails.ordered,
+            onValueChange = { onValueChange(itemDetails.copy(ordered = it)) },
             label = { Text(stringResource(R.string.order_num))},
             modifier = Modifier.fillMaxWidth()
         )
         Button(
-            onClick = onOrder,
+            onClick = onSaveClick,
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.small,
             enabled = true
@@ -282,7 +290,9 @@ fun ItemDetailsScreenPreview() {
             ),
             onSellItem = {},
             onDelete = {},
-            onOrder = {}
+            onValueChange = {},
+            onSaveClick = {},
+            itemDetails = ItemDetails(1, "Pen", "$100", "10", )
         )
     }
 }
