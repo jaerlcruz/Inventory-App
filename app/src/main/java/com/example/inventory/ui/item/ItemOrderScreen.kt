@@ -68,7 +68,7 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 
 object ItemOrderDestination : NavigationDestination {
-    override val route = "item_details"
+    override val route = "order_details"
     override val titleRes = R.string.order_details
     const val itemIdArg = "itemId"
     val routeWithArgs = "$route/{$itemIdArg}"
